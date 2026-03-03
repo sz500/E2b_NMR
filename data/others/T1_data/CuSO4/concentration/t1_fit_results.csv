@@ -1,0 +1,2 @@
+file_name,file_path,n_points,m0_csv,m0_csv_err,m0_fit,m0_fit_err,t1_fit,t1_fit_err
+CuSO4_3.1_T=24.xlsx,/Users/tychus/Coding/E2b_NMR/T1_data/CuSO4/concentration/CuSO4_3.1_T=24.xlsx,9,8030.0,40.0,7697.000188906281,83.38746192502103,15.872336804489597,0.20041421427542067
