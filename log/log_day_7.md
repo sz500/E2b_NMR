@@ -25,7 +25,7 @@ strengths);
 (10) the concentration of the nuclei under investigation.
 (GD)
 
-- Gly 100 T =40, very temepratrue dependent. the strange signal very strong.
+- Gly 100 T = 40, very temepratrue dependent. the strange signal very strong.
 
 14:36
 - about report  

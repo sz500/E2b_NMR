@@ -25,7 +25,7 @@
 
 17:55
 - data collected for T2 curve fitting
-  - with 2 different delat time
+  - with 2 different delta time
 
 OVERTHE WEEKEND
 - handle the T2 data,calculate T2

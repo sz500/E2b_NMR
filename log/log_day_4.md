@@ -11,7 +11,7 @@
 
 
 12:43
-- REPETITIONTIME!
+- REPETITION TIME!
   - for each sample, the lower limit is different
     - Minerol: 2s --> choose 2s
     - Gly:100 ms --> choose 200ms wrong!

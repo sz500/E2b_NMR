@@ -19,6 +19,6 @@
 - ![alt text](image-1.png)
 - ![alt text](image-2.png)
 
-POSSIBLEERROR
+POSSIBLE ERROR
 
 - heating bath water level too low, T not same as reading from thermometer or machine reading
