@@ -192,7 +192,7 @@ def fit_curve(filepath, prominence=0.5, distance=100, height_threshold=None, min
             T2_guess = 200
         
         # Add constant measurement error to all data points
-        measurement_error = 0.1  # V (constant error for all measurements)
+        measurement_error = 0.02 # V (constant error for all measurements)
         sigma = np.full_like(peak_voltages_fit, measurement_error)
         
         popt, pcov = curve_fit(exponential_decay, peak_times_fit, peak_voltages_fit, 
@@ -200,7 +200,6 @@ def fit_curve(filepath, prominence=0.5, distance=100, height_threshold=None, min
         
         M0, T2, C = popt
         T2_err = np.sqrt(np.diag(pcov))[1]  # Standard error in T2 only
-        
         # Calculate residuals and reduced chi-square for diagnostics
         residuals = peak_voltages_fit - exponential_decay(peak_times_fit, M0, T2, C)
         chi2 = np.sum((residuals / sigma) ** 2)
@@ -228,26 +227,101 @@ def fit_curve(filepath, prominence=0.5, distance=100, height_threshold=None, min
     output_name = os.path.splitext(filename)[0] + '_fitted.png'
     output_path = os.path.join(figures_dir, output_name)
     
-    plt.figure(figsize=(12, 7))
-    plt.plot(time, voltage, color='gray', alpha=0.3, linewidth=1, label='Original data')
-    # Show all detected peaks in red
-    plt.scatter(peak_times, peak_voltages, color='red', s=50, label='Detected peaks', zorder=3)
-    # Shade the error band around the fitted curve
-    plt.fill_between(t_smooth, curve_lower, curve_upper, color='blue', alpha=0.15, label=f'T2 uncertainty (±1σ: ±{T2_err:.4f} ms)')
-    plt.plot(t_smooth, fitted_curve, 'b-', linewidth=2, label=f'Fit: $M_z = M_0 e^{{-t/T_2}} + C$')
-    plt.xlabel('Time (ms)', fontsize=12)
-    plt.ylabel('Channel A Voltage (V)', fontsize=12)
-    plt.title(f'T2 Curve Fitting: {filename}\n$M_0 = {M0:.4f}$ V, $T_2 = {T2:.4f} \\pm {T2_err:.4f}$ ms, $C = {C:.4f}$ V', fontsize=13)
-    plt.grid(True, alpha=0.3)
-    plt.legend(fontsize=10)
-    plt.tight_layout()
-    plt.savefig(output_path, dpi=300)
-    plt.show()
-    plt.close()
+    with plt.rc_context({
+        'font.family': 'serif',
+        'font.size': 9,
+        'axes.labelsize': 10,
+        'axes.titlesize': 10,
+        'axes.linewidth': 0.8,
+        'xtick.labelsize': 9,
+        'ytick.labelsize': 9,
+        'xtick.direction': 'in',
+        'ytick.direction': 'in',
+        'xtick.major.size': 4,
+        'ytick.major.size': 4,
+        'xtick.minor.size': 2.5,
+        'ytick.minor.size': 2.5,
+        'legend.fontsize': 8,
+        'savefig.bbox': 'tight'
+    }):
+        fig, (ax1, ax2) = plt.subplots(
+            2, 1, figsize=(4.8, 5.0),
+            gridspec_kw={'height_ratios': [3, 1]}, sharex=True
+        )
+
+        # Raw trace in the background for data context
+        ax1.plot(time, voltage, color='gray', alpha=0.25, linewidth=0.8, zorder=0, label='Original data')
+
+        # Peaks used for fitting
+        ax1.errorbar(
+            peak_times_fit,
+            peak_voltages_fit,
+            yerr=sigma,
+            fmt='o',
+            color='black',
+            ecolor='black',
+            elinewidth=0.8,
+            capsize=2,
+            capthick=0.8,
+            markersize=3,
+            markeredgewidth=1,
+            zorder=2,
+            label='Peak amplitudes'
+        )
+
+        # Fit and uncertainty band
+        ax1.fill_between(
+            t_smooth,
+            curve_lower,
+            curve_upper,
+            color='steelblue',
+            alpha=0.12,
+            zorder=1,
+            label=f'T2 uncertainty (±1σ: ±{T2_err:.2g} ms)'
+        )
+        ax1.plot(
+            t_smooth,
+            fitted_curve,
+            linestyle='--',
+            color='steelblue',
+            linewidth=1.5,
+            zorder=3,
+            label=f'Fit: $T_2 = {T2:.3g} \\pm {T2_err:.2g}$ ms'
+        )
+
+        ax1.set_ylabel(r'Signal Amplitude $\propto$ $M_{xy}$ (V)')
+        ax1.minorticks_on()
+        ax1.grid(True, which='major', linestyle='--', linewidth=0.5, alpha=0.25)
+        ax1.legend(frameon=False)
+
+        # Residuals plot
+        ax2.errorbar(
+            peak_times_fit,
+            residuals,
+            yerr=sigma,
+            fmt='o',
+            color='black',
+            ecolor='black',
+            elinewidth=0.8,
+            capsize=2,
+            capthick=0.8,
+            markersize=3,
+            markeredgewidth=1
+        )
+        ax2.axhline(0, color='steelblue',linestyle='--', linewidth=1.0)
+        ax2.set_xlabel(r'Delay Time 2$\tau$ (ms)')
+        ax2.set_ylabel('Residuals (V)')
+        ax2.minorticks_on()
+        ax2.grid(True, which='major', linestyle='--', linewidth=0.5, alpha=0.25)
+
+        fig.tight_layout()
+        fig.savefig(output_path, dpi=600)
+        plt.show()
+        plt.close(fig)
     
     print(f"✓ {filename}")
     print(f"  M0 = {M0:.6f} V")
-    print(f"  T2 = {T2:.6f} ± {T2_err:.6f} ms")
+    print(f"  T2 = {T2:.3g} ± {T2_err:.3g} ms")
     print(f"  C  = {C:.6f} V")
     
     peaks = {
@@ -309,11 +383,12 @@ def fit_multiple_files(data_folder='data/T2', prominence=0.5, distance=50, heigh
 # Main execution
 if __name__ == '__main__':
 
-    prominence = 0.05
-    distance = 300
-    height_threshold = 0.26
-    min_width = 0.1
-    skip_peaks = 1,2
+    prominence = 0.13
+    distance = 500
+    height_threshold = 0.0
+   
+    min_width = 0.5
+    skip_peaks = None # use 1, if want to skip the first; use 2,3,5 if want to skip 2nd, 3rd, 5th
     
     if len(sys.argv) < 2:
         print("Curve Fitting Tool for NMR T2 Data")

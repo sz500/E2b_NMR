@@ -1,0 +1,12 @@
+for Gly at low conc. and CuSO4 at high conc.
+
+delay time affects the shape of the "decaying sinusoid" drastically
+
+check this example, for Glycerol at 15% concentration, if delay time is 1.6ms or higher,
+a weird "envelope" that "breathes" over time occurs.
+
+In both cases the sample is at resonance.
+
+However, small decay time means less decay and bigger error in T2.
+
+As a result, the trend for T2 at low conc. Glycerol is unbearable.
